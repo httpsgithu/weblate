@@ -21,6 +21,7 @@ import os
 import os.path
 
 from django.conf import settings
+from django.core.cache import cache
 from django.db import models, transaction
 from django.db.models import Count, Value
 from django.db.models.functions import Replace
@@ -244,13 +245,6 @@ class Project(FastDeleteModelMixin, models.Model, URLMixin, PathMixin, CacheKeyM
             return {}
         return dict(part.split(":") for part in self.language_aliases.split(","))
 
-    def get_language_alias(self, code):
-        if code in self.language_aliases_dict:
-            return self.language_aliases_dict[code]
-        if code in ("source", "src", "default"):
-            return self.source_language.code
-        return code
-
     def get_group(self, group):
         return self.group_set.get(name=f"{self.name}{group}")
 
@@ -352,6 +346,10 @@ class Project(FastDeleteModelMixin, models.Model, URLMixin, PathMixin, CacheKeyM
         """Push all Git repos."""
         return self.on_repo_components(True, "do_cleanup", request)
 
+    def do_file_sync(self, request=None):
+        """Push all Git repos."""
+        return self.on_repo_components(True, "do_file_sync", request)
+
     def can_push(self):
         """Check whether any suprojects can push."""
         return self.on_repo_components(False, "can_push")
@@ -433,9 +431,11 @@ class Project(FastDeleteModelMixin, models.Model, URLMixin, PathMixin, CacheKeyM
         return self.component_set.distinct() | self.shared_components.distinct()
 
     def scratch_create_component(
-        self, name, slug, source_language, file_format, has_template=True, **kwargs
+        self, name, slug, source_language, file_format, has_template=None, **kwargs
     ):
         format_cls = FILE_FORMATS[file_format]
+        if has_template is None:
+            has_template = format_cls.monolingual is None or format_cls.monolingual
         if has_template:
             template = f"{source_language.code}.{format_cls.extension()}"
         else:
@@ -450,6 +450,7 @@ class Project(FastDeleteModelMixin, models.Model, URLMixin, PathMixin, CacheKeyM
             source_language=source_language,
             name=name,
             slug=slug,
+            manage_units=True,
             **kwargs,
         )
 
@@ -458,3 +459,22 @@ class Project(FastDeleteModelMixin, models.Model, URLMixin, PathMixin, CacheKeyM
         return [
             component for component in self.child_components if component.is_glossary
         ]
+
+    @cached_property
+    def glossary_automaton_key(self):
+        return f"project-glossary-{self.pk}"
+
+    def invalidate_glossary_cache(self):
+        cache.delete(self.glossary_automaton_key)
+        if "glossary_automaton" in self.__dict__:
+            del self.__dict__["glossary_automaton"]
+
+    @cached_property
+    def glossary_automaton(self):
+        from weblate.glossary.models import get_glossary_automaton
+
+        result = cache.get(self.glossary_automaton_key)
+        if result is None:
+            result = get_glossary_automaton(self)
+            cache.set(self.glossary_automaton_key, result, 24 * 3600)
+        return result

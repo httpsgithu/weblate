@@ -34,13 +34,14 @@ from translate.misc.multistring import multistring
 from translate.misc.xml_helpers import setXMLspace
 from translate.storage.base import TranslationStore
 from translate.storage.csvl10n import csv
+from translate.storage.jsonl10n import BaseJsonUnit, JsonFile
 from translate.storage.lisa import LISAfile, LISAunit
 from translate.storage.po import pofile, pounit
 from translate.storage.poxliff import PoXliffFile
 from translate.storage.resx import RESXFile
-from translate.storage.tbx import tbxfile
+from translate.storage.tbx import tbxfile, tbxunit
 from translate.storage.ts2 import tsfile, tsunit
-from translate.storage.xliff import ID_SEPARATOR, xlifffile
+from translate.storage.xliff import ID_SEPARATOR, xlifffile, xliffunit
 
 import weblate.utils.version
 from weblate.checks.flags import Flags
@@ -231,6 +232,7 @@ class TTKitFormat(TranslationFormat):
             template_store=template_store,
             language_code=language_code,
             is_template=is_template,
+            source_language=source_language,
         )
         # Set language (needed for some which do not include this)
         if language_code is not None and self.store.gettargetlanguage() is None:
@@ -337,9 +339,16 @@ class TTKitFormat(TranslationFormat):
         return True
 
     def construct_unit(self, source: str):
+        if issubclass(self.store.UnitClass, LISAunit) and self.source_language:
+            # Setting source on LISAunit will make it use default language
+            unit = self.store.UnitClass(None)
+            unit.setsource(source, self.source_language)
+            return unit
         return self.store.UnitClass(source)
 
-    def create_unit_key(self, key: str, source: Union[str, List[str]]) -> str:
+    def create_unit_key(
+        self, key: str, source: Union[str, List[str], multistring]
+    ) -> Union[str, multistring]:
         return key
 
     def create_unit(
@@ -348,35 +357,56 @@ class TTKitFormat(TranslationFormat):
         source: Union[str, List[str]],
         target: Optional[Union[str, List[str]]] = None,
     ):
+        # Make sure target is a string
+        if target is None:
+            target = ""
+        # Process source
         if isinstance(source, list):
             context = source[0]
-            unit = self.construct_unit(context)
             if len(source) == 1:
+                # Single string passed plain
                 source = context
             else:
+                # List passed as multistirng
                 source = multistring(source)
         else:
+            # This is string
             context = source
-            unit = self.construct_unit(source)
+
+        # Process target
         if isinstance(target, list):
             if len(target) == 1:
                 target = target[0]
             else:
                 target = multistring(target)
-        if key:
+
+        # Build the unit
+        unit = self.construct_unit(context)
+
+        if self.is_template or self.template_store:
+            # Monolingual translation
             unit.setid(key)
-        elif target is not None and self.set_context_bilingual:
-            unit.setid(context)
-            unit.context = context
-        if target is None:
             target = source
             source = self.create_unit_key(key, source)
+        else:
+            # Bilingual translation
+            if isinstance(unit, (tbxunit, xliffunit)) and key:
+                unit.setid(key)
+            elif self.set_context_bilingual and key:
+                unit.setcontext(key)
+            elif isinstance(unit, BaseJsonUnit):
+                unit.setid(context)
 
-        unit.source = source
+        if isinstance(unit, LISAunit) and self.source_language:
+            unit.setsource(source, self.source_language)
+        else:
+            unit.source = source
+
         if isinstance(unit, LISAunit) and self.language_code:
             unit.settarget(target, self.language_code)
         else:
             unit.target = target
+
         return unit
 
     @classmethod
@@ -1017,9 +1047,13 @@ class PoMonoFormat(BasePoFormat):
         'Content-Transfer-Encoding: 8bit"'
     )
     unit_class = PoMonoUnit
+    bilingual_class = PoFormat
+    set_context_bilingual = False
 
-    def create_unit_key(self, key: str, source: Union[str, List[str]]) -> str:
-        if isinstance(source, list):
+    def create_unit_key(
+        self, key: str, source: Union[str, List[str], multistring]
+    ) -> Union[str, multistring]:
+        if isinstance(source, (list, multistring)):
             return multistring([key, f"{key}_plural"])
         return key
 
@@ -1030,6 +1064,7 @@ class TSFormat(TTKitFormat):
     loader = tsfile
     autoload = ("*.ts",)
     unit_class = TSUnit
+    set_context_bilingual = False
 
     @classmethod
     def untranslate_store(cls, store, language, fuzzy=False):
@@ -1047,10 +1082,9 @@ class XliffFormat(TTKitFormat):
     autoload: Tuple[str, ...] = ("*.xlf", "*.xliff")
     unit_class = XliffUnit
     language_format = "bcp"
-    set_context_bilingual = False
 
     def construct_unit(self, source: str):
-        unit = self.store.UnitClass(source)
+        unit = super().construct_unit(source)
         # Make sure new unit is using same namespace as the original
         # file (xliff 1.1/1.2)
         unit.namespace = self.store.namespace
@@ -1071,7 +1105,7 @@ class XliffFormat(TTKitFormat):
 
 
 class PoXliffFormat(XliffFormat):
-    name = _("XLIFF translation file with PO extensions")
+    name = _("XLIFF with gettext extensions")
     format_id = "poxliff"
     autoload = ("*.poxliff",)
     loader = PoXliffFile
@@ -1226,10 +1260,11 @@ class AndroidFormat(TTKitFormat):
 class JSONFormat(TTKitFormat):
     name = _("JSON file")
     format_id = "json"
-    loader = ("jsonl10n", "JsonFile")
+    loader = JsonFile
     unit_class = JSONUnit
     autoload: Tuple[str, ...] = ("*.json",)
     new_translation = "{}\n"
+    set_context_bilingual = False
 
     @staticmethod
     def mimetype():
@@ -1301,6 +1336,7 @@ class CSVFormat(TTKitFormat):
             storefile,
             template_store=template_store,
             language_code=language_code,
+            source_language=source_language,
             is_template=is_template,
         )
         # Remove template if the file contains source, this is needed
@@ -1602,6 +1638,8 @@ class XWikiPropertiesFormat(PropertiesBaseFormat):
     language_format = "java"
     autoload = ("*.properties",)
     new_translation = "\n"
+    can_add_unit: bool = False
+    set_context_bilingual: bool = True
 
     # Ensure that not translated units are saved too as missing properties and
     # comments are preserved as in the original source file.
@@ -1705,7 +1743,7 @@ class TBXFormat(TTKitFormat):
     new_translation = tbxfile.XMLskeleton
     unit_class = TBXUnit
     create_empty_bilingual: bool = True
-    set_context_bilingual: bool = False
+    monolingual = False
 
     def __init__(
         self,
@@ -1720,6 +1758,7 @@ class TBXFormat(TTKitFormat):
             template_store=template_store,
             language_code=language_code,
             is_template=is_template,
+            source_language=source_language,
         )
         # Add language header if not present
         self.store.addheader()

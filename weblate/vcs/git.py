@@ -728,9 +728,12 @@ class GitMergeRequestBase(GitForcePushRepository):
         raise NotImplementedError()
 
     def get_merge_message(self):
-        return render_template(
+        parts = render_template(
             settings.DEFAULT_PULL_MESSAGE, component=self.component
         ).split("\n\n", 1)
+        if len(parts) == 1:
+            parts.append("")
+        return parts
 
     def format_api_host(self, host):
         return host
@@ -880,7 +883,7 @@ class LocalRepository(GitRepository):
         cls._popen(["commit", "--message", "Repository created by Weblate"], target)
         # We could do here just init --initial-branch {branch}, but that does not
         # work in Git before 2.28.0
-        cls._popen(["branch", "--move", "master", "main"], target)
+        cls._popen(["branch", "--move", "master", branch], target)
 
     @cached_property
     def last_remote_revision(self):
@@ -978,7 +981,7 @@ class GitLabRepository(GitMergeRequestBase):
             raise RepositoryException(0, error or "Failed to get project")
         return response["id"]
 
-    def disable_fork_features(self, credentials: Dict, forked_url: str):
+    def configure_fork_features(self, credentials: Dict, forked_url: str):
         """Disable features in fork.
 
         GitLab initializes a lot of the features in the fork
@@ -989,7 +992,7 @@ class GitLabRepository(GitMergeRequestBase):
         access_level_dict = {
             "issues_access_level": "disabled",
             "forking_access_level": "disabled",
-            "builds_access_level": "disabled",
+            "builds_access_level": "enabled",
             "wiki_access_level": "disabled",
             "snippets_access_level": "disabled",
             "pages_access_level": "disabled",
@@ -1034,7 +1037,7 @@ class GitLabRepository(GitMergeRequestBase):
             if "ssh_url_to_repo" not in forked_repo:
                 raise RepositoryException(0, error or "Failed to create fork")
 
-        self.disable_fork_features(credentials, forked_repo["_links"]["self"])
+        self.configure_fork_features(credentials, forked_repo["_links"]["self"])
         self.configure_fork_remote(
             forked_repo["ssh_url_to_repo"], credentials["username"]
         )

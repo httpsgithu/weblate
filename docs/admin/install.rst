@@ -417,6 +417,10 @@ Following configuration is recommended for Weblate:
 * Set the isolation level to ``READ COMMITTED``.
 * The SQL mode should be set to ``STRICT_TRANS_TABLES``.
 
+MySQL 8.x, MariaDB 10.5.x or newer have reasonable default configuration so
+that no server tweaking should be necessary and all what is needed can be
+configured on the client side.
+
 Below is an example :file:`/etc/my.cnf.d/server.cnf` for a server with 8 GB of
 RAM. These settings should be sufficient for most installs. MySQL and MariaDB
 have tunables that will increase the performance of your server that are
@@ -826,7 +830,7 @@ After enabling it, you should set :setting:`ENABLE_HTTPS` in the settings:
 Set properly SECURE_HSTS_SECONDS
 ++++++++++++++++++++++++++++++++
 
-If your site is served over SSL, you have to consider setting a value for :setting:`SECURE_HSTS_SECONDS`
+If your site is served over SSL, you have to consider setting a value for :setting:`django:SECURE_HSTS_SECONDS`
 in the :file:`settings.py` to enable HTTP Strict Transport Security.
 By default it's set to 0 as shown below.
 
@@ -1185,6 +1189,10 @@ On each deploy you need to compress the files to match current version:
 Running server
 --------------
 
+.. hint::
+
+   In case you are not experienced with services described below, you might want to try :doc:`install/docker`.
+
 You will need several services to run Weblate, the recommended setup consists of:
 
 * Database server (see :ref:`database-setup`)
@@ -1265,9 +1273,12 @@ use that for the following paths:
 
 .. seealso::
 
-    :ref:`production-compress`,
-    :doc:`django:howto/deployment/index`,
-    :doc:`django:howto/static-files/deployment`
+   :ref:`uwsgi`,
+   :ref:`apache`,
+   :ref:`apache-gunicorn`,
+   :ref:`production-compress`,
+   :doc:`django:howto/deployment/index`,
+   :doc:`django:howto/static-files/deployment`
 
 .. _csp:
 
