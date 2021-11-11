@@ -2,56 +2,56 @@
 # yarn lockfile v1
 
 
-"@sentry/browser@6.2.0":
-  version "6.2.0"
-  resolved "https://registry.yarnpkg.com/@sentry/browser/-/browser-6.2.0.tgz#4113a92bc82f55e63f30cb16a94f717bd0b95817"
-  integrity sha512-4r3paHcHXLemj471BtNDhUs2kvJxk5XDRplz1dbC/LHXN5PWEXP4anhGILxOlxqi4y33r53PIZu3xXFjznaVZA==
+"@sentry/browser@6.14.2":
+  version "6.14.2"
+  resolved "https://registry.yarnpkg.com/@sentry/browser/-/browser-6.14.2.tgz#56fdfee3d82c818e46e367bcbb239dfdaa7ec562"
+  integrity sha512-m5ghOcJ59JSm/Pmd7w0I5ljK3aOu9VymHjagf6CGsB0ppdNfqmkiOmpdnxjh6hXkw1Tu2aar6NcQ49g5xcfI4Q==
   dependencies:
-    "@sentry/core" "6.2.0"
-    "@sentry/types" "6.2.0"
-    "@sentry/utils" "6.2.0"
+    "@sentry/core" "6.14.2"
+    "@sentry/types" "6.14.2"
+    "@sentry/utils" "6.14.2"
     tslib "^1.9.3"
 
-"@sentry/core@6.2.0":
-  version "6.2.0"
-  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-6.2.0.tgz#be1c33854fc94e1a4d867f7c2c311cf1cefb8ee9"
-  integrity sha512-oTr2b25l+0bv/+d6IgMamPuGleWV7OgJb0NFfd+WZhw6UDRgr7CdEJy2gW6tK8SerwXgPHdn4ervxsT3WIBiXw==
+"@sentry/core@6.14.2":
+  version "6.14.2"
+  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-6.14.2.tgz#556e99a98ee357834806647884897ff55dae1d8d"
+  integrity sha512-YZTcPgib8KaUOJH2lUKkhGtzDdCPAGJfZj2D8ZS8iD7+6RA3GciQ1IYl20Mdny/r0Y0kuF1y7Pq8l72TgH9rog==
   dependencies:
-    "@sentry/hub" "6.2.0"
-    "@sentry/minimal" "6.2.0"
-    "@sentry/types" "6.2.0"
-    "@sentry/utils" "6.2.0"
+    "@sentry/hub" "6.14.2"
+    "@sentry/minimal" "6.14.2"
+    "@sentry/types" "6.14.2"
+    "@sentry/utils" "6.14.2"
     tslib "^1.9.3"
 
-"@sentry/hub@6.2.0":
-  version "6.2.0"
-  resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-6.2.0.tgz#e7502652bc9608cf8fb63e43cd49df9019a28f29"
-  integrity sha512-BDTEFK8vlJydWXp/KMX0stvv73V7od224iLi+w3k7BcPwMKXBuURBXPU8d5XIC4G8nwg8X6cnDvwL+zBBlBbkg==
+"@sentry/hub@6.14.2":
+  version "6.14.2"
+  resolved "https://registry.yarnpkg.com/@sentry/hub/-/hub-6.14.2.tgz#e58912cd1f39b93c2e2d6d349bd5deb08d668bfd"
+  integrity sha512-2t3AiT4kqrnsD/2f1NAs28w73L824/mCTKsD4aUM8/md3xG+zB5Wiua08I3iu+F2ICtMWZbae7NkJbrERuo67Q==
   dependencies:
-    "@sentry/types" "6.2.0"
-    "@sentry/utils" "6.2.0"
+    "@sentry/types" "6.14.2"
+    "@sentry/utils" "6.14.2"
     tslib "^1.9.3"
 
-"@sentry/minimal@6.2.0":
-  version "6.2.0"
-  resolved "https://registry.yarnpkg.com/@sentry/minimal/-/minimal-6.2.0.tgz#718b70babb55912eeb38babaf7823d1bcdd77d1e"
-  integrity sha512-haxsx8/ZafhZUaGeeMtY7bJt9HbDlqeiaXrRMp1CxGtd0ZRQwHt60imEjl6IH1I73SEWxNfqScGsX2s3HzztMg==
+"@sentry/minimal@6.14.2":
+  version "6.14.2"
+  resolved "https://registry.yarnpkg.com/@sentry/minimal/-/minimal-6.14.2.tgz#424b7917b625fea993ad9656ceabee840a76a999"
+  integrity sha512-QYR14eXRHNkQTnp+3cDTcrcA0L++ns4A54/Yql/ON0Bzry55xDqNeKwSKhbdS6nv+GmPpXR1Ok4r7bH7NbPUQw==
   dependencies:
-    "@sentry/hub" "6.2.0"
-    "@sentry/types" "6.2.0"
+    "@sentry/hub" "6.14.2"
+    "@sentry/types" "6.14.2"
     tslib "^1.9.3"
 
-"@sentry/types@6.2.0":
-  version "6.2.0"
-  resolved "https://registry.yarnpkg.com/@sentry/types/-/types-6.2.0.tgz#ca020ff42913c6b9f88a9d0c375b5ee3965a2590"
-  integrity sha512-vN4P/a+QqAuVfWFB9G3nQ7d6bgnM9jd/RLVi49owMuqvM24pv5mTQHUk2Hk4S3k7ConrHFl69E7xH6Dv5VpQnQ==
+"@sentry/types@6.14.2":
+  version "6.14.2"
+  resolved "https://registry.yarnpkg.com/@sentry/types/-/types-6.14.2.tgz#3884527a6299dc52640685a7070bf55bc3a51101"
+  integrity sha512-3QHmnjBSK9jj8HGaQ6cyWssFddcYuEv5RSJg/jjq/lxCnR4HsLnHLbvyLXvCKv60WwMZBR7RbsgqGJbbnSQ22Q==
 
-"@sentry/utils@6.2.0":
-  version "6.2.0"
-  resolved "https://registry.yarnpkg.com/@sentry/utils/-/utils-6.2.0.tgz#39c81ad5ba92cec54d690e3fa8ea4e777d8e9c2b"
-  integrity sha512-YToUC7xYf2E/pIluI7upYTlj8fKXOtdwoOBkcQZifHgX/dP+qDaHibbBFe5PyZwdmU2UiLnWFsBr0gjo0QFo1g==
+"@sentry/utils@6.14.2":
+  version "6.14.2"
+  resolved "https://registry.yarnpkg.com/@sentry/utils/-/utils-6.14.2.tgz#2c675e4077a6bf2ba529266941c20a84d3d9a56b"
+  integrity sha512-NLa8xyhtvx+EbWTbTKMt7iz0Yz9OyN4ao3YvxkRXqzGYuTifLhkNw+H106eHiT9Fri8QmyYcBBz6dYfG5Zk9xQ==
   dependencies:
-    "@sentry/types" "6.2.0"
+    "@sentry/types" "6.14.2"
     tslib "^1.9.3"
 
 ansi-regex@^5.0.0:
